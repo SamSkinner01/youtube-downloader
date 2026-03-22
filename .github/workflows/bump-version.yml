@@ -86,3 +86,58 @@ jobs:
           tag_name: ${{ needs.bump.outputs.tag }}
           files: scripts/YouTube-Downloader-*.dmg
           generate_release_notes: true
+
+  build-windows:
+    needs: bump
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Set up MinGW (for CGo / Fyne)
+        run: echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Download static ffmpeg for Windows
+        shell: pwsh
+        run: |
+          $rel = Invoke-RestMethod "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest"
+          $asset = $rel.assets | Where-Object { $_.name -match "win64-gpl\.zip$" -and $_.name -notmatch "shared" } | Select-Object -First 1
+          Invoke-WebRequest $asset.browser_download_url -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg-pkg
+          $bin = Get-ChildItem ffmpeg-pkg -Recurse -Filter "bin" | Select-Object -First 1
+          Copy-Item "$($bin.FullName)\ffmpeg.exe"  "ffmpeg.exe"
+          Copy-Item "$($bin.FullName)\ffprobe.exe" "ffprobe.exe"
+
+      - name: Convert icon to ICO
+        shell: pwsh
+        run: |
+          .\ffmpeg.exe -y -i assets\ytd.jpg -vf scale=256:256 assets\icon.ico
+
+      - name: Build Windows GUI
+        shell: pwsh
+        run: |
+          $version = "${{ needs.bump.outputs.tag }}" -replace '^v',''
+          go build -ldflags "-X youtube-downloader/internal/version.Current=$version -H windowsgui" `
+            -o youtube-downloader-gui.exe ./cmd/gui/
+        env:
+          CGO_ENABLED: 1
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          $version = "${{ needs.bump.outputs.tag }}" -replace '^v',''
+          & "C:\Program Files (x86)\NSIS\makensis.exe" /DVERSION=$version scripts\installer.nsi
+
+      - name: Upload installer to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.bump.outputs.tag }}
+          files: scripts/YouTube-Downloader-Setup-*.exe

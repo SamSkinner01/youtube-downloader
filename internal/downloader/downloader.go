@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -49,7 +50,7 @@ func (f FileInfo) String() string {
 
 // ProbeFile uses ffprobe to inspect an output file and return its metadata.
 func ProbeFile(path, outFormat string) (FileInfo, error) {
-	ffprobe := strings.TrimSuffix(ffmpegBin(), "ffmpeg") + "ffprobe"
+	ffprobe := toolBin("ffprobe")
 	cmd := exec.Command(ffprobe,
 		"-v", "quiet",
 		"-print_format", "json",
@@ -379,22 +380,25 @@ func muxMP4(videoPath, audioPath, outPath string) error {
 	)
 }
 
-// ffmpegBin returns the path to the bundled ffmpeg if running inside a .app
-// bundle, falling back to whatever is on the system PATH.
-func ffmpegBin() string {
+// toolBin returns the path to a bundled tool (e.g. ffmpeg, ffprobe), falling
+// back to the system PATH. Appends .exe on Windows automatically.
+func toolBin(name string) string {
+	if runtime.GOOS == "windows" {
+		name += ".exe"
+	}
 	exe, err := os.Executable()
 	if err != nil {
-		return "ffmpeg"
+		return name
 	}
-	bundled := filepath.Join(filepath.Dir(exe), "ffmpeg")
+	bundled := filepath.Join(filepath.Dir(exe), name)
 	if _, err := os.Stat(bundled); err == nil {
 		return bundled
 	}
-	return "ffmpeg"
+	return name
 }
 
 func runFFmpeg(args ...string) error {
-	cmd := exec.Command(ffmpegBin(), append([]string{"-hide_banner", "-loglevel", "error"}, args...)...)
+	cmd := exec.Command(toolBin("ffmpeg"), append([]string{"-hide_banner", "-loglevel", "error"}, args...)...)
 	errOut, err := cmd.StderrPipe()
 	if err != nil {
 		return err
