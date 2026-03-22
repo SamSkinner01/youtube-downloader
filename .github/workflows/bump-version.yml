@@ -19,6 +19,8 @@ permissions:
 jobs:
   bump:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +29,6 @@ jobs:
       - name: Compute next version
         id: version
         run: |
-          # Get latest tag, default to v0.0.0 if none exists
           LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           LATEST=${LATEST:-v0.0.0}
           echo "Current: $LATEST"
@@ -50,3 +51,37 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ steps.version.outputs.tag }}
           git push origin ${{ steps.version.outputs.tag }}
+
+  build-macos:
+    needs: bump
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install ffmpeg
+        run: brew install ffmpeg
+
+      - name: Install macOS GUI dependencies
+        run: brew install pkg-config
+
+      - name: Build DMG
+        run: |
+          cd scripts
+          chmod +x build-installer.sh
+          ./build-installer.sh
+        env:
+          VERSION: ${{ needs.bump.outputs.tag }}
+
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.bump.outputs.tag }}
+          files: scripts/YouTube-Downloader-*.dmg
+          generate_release_notes: true
