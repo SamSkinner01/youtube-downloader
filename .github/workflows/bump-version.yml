@@ -142,6 +142,9 @@ jobs:
         env:
           CGO_ENABLED: 1
 
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+
       - name: Build NSIS installer
         shell: pwsh
         run: |
