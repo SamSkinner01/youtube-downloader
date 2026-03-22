@@ -3,13 +3,12 @@ set -e
 
 APP_NAME="YouTube Downloader"
 BUNDLE_ID="com.youtube-downloader.app"
-VERSION="1.0.0"
 ICON_SRC="../assets/ytd.jpg"
 APP_BUNDLE="${APP_NAME}.app"
-DMG_NAME="YouTube-Downloader-${VERSION}.dmg"
 
 echo "==> Building binary..."
-VERSION=$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "$VERSION")
+VERSION=$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "${VERSION:-dev}")
+DMG_NAME="YouTube-Downloader-${VERSION}.dmg"
 go build \
   -ldflags "-X youtube-downloader/internal/version.Current=${VERSION}" \
   -o youtube-downloader-gui \
@@ -66,6 +65,21 @@ cat > "${APP_BUNDLE}/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
+
+echo "==> Signing .app bundle..."
+if [ -n "$APPLE_SIGN_IDENTITY" ]; then
+  # Full Developer ID signing (requires Apple Developer account)
+  codesign --sign "$APPLE_SIGN_IDENTITY" \
+    --deep --force --options runtime \
+    --entitlements ../scripts/entitlements.plist \
+    "$APP_BUNDLE"
+  echo "    Signed with: $APPLE_SIGN_IDENTITY"
+else
+  # Ad-hoc signing — lets the app run on the build machine without Gatekeeper prompts.
+  # Distributed builds will still show a Gatekeeper warning unless notarized.
+  codesign --sign - --deep --force "$APP_BUNDLE"
+  echo "    Ad-hoc signed (no Developer ID found)"
+fi
 
 echo "==> Creating DMG..."
 STAGING="dmg-staging"
