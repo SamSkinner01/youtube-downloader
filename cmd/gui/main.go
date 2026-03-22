@@ -21,8 +21,8 @@ import (
 func main() {
 	a := app.New()
 	w := a.NewWindow("YouTube Downloader")
-	w.Resize(fyne.NewSize(520, 360))
-	w.SetFixedSize(true)
+	w.Resize(fyne.NewSize(540, 420))
+	w.SetFixedSize(false)
 
 	// --- URL ---
 	urlEntry := widget.NewEntry()
