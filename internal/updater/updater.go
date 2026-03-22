@@ -152,19 +152,24 @@ func downloadDMG(url string, progress func(float64)) (string, error) {
 func mountDMG(dmgPath string) (string, error) {
 	out, err := exec.Command(
 		"hdiutil", "attach", dmgPath,
-		"-nobrowse", "-noautoopen", "-plist",
+		"-nobrowse", "-noautoopen",
 	).Output()
 	if err != nil {
 		return "", err
 	}
 
-	// Parse the plist output to find the mount point
-	// Look for the last /Volumes/... path in the output
-	lines := strings.Split(string(out), "\n")
-	for i := len(lines) - 1; i >= 0; i-- {
-		line := strings.TrimSpace(lines[i])
-		if strings.HasPrefix(line, "/Volumes/") {
-			return line, nil
+	// Plain text output has lines like:
+	// /dev/disk4s2  Apple_HFS  /Volumes/YouTube Downloader
+	for _, line := range strings.Split(string(out), "\n") {
+		fields := strings.Fields(line)
+		for _, f := range fields {
+			if strings.HasPrefix(f, "/Volumes/") {
+				return f, nil
+			}
+		}
+		// Mount points with spaces won't survive Fields — find the tab-separated path
+		if idx := strings.Index(line, "/Volumes/"); idx != -1 {
+			return strings.TrimSpace(line[idx:]), nil
 		}
 	}
 	return "", fmt.Errorf("could not find mount point in hdiutil output")
