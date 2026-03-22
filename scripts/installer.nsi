@@ -2,13 +2,16 @@
   !define VERSION "0.0.0"
 !endif
 
+; Set working directory to repo root so File commands resolve correctly
+!cd ".."
+
 !define APP_NAME    "YouTube Downloader"
 !define PUBLISHER   "SamSkinner01"
 !define INSTALL_DIR "$PROGRAMFILES64\${APP_NAME}"
 !define REG_KEY     "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 
 Name            "${APP_NAME} ${VERSION}"
-OutFile         "YouTube-Downloader-Setup-${VERSION}.exe"
+OutFile         "scripts\YouTube-Downloader-Setup-${VERSION}.exe"
 InstallDir      "${INSTALL_DIR}"
 InstallDirRegKey HKLM "Software\${APP_NAME}" "Install_Dir"
 RequestExecutionLevel admin
@@ -16,8 +19,8 @@ Unicode True
 
 !include "MUI2.nsh"
 
-!define MUI_ICON "..\assets\icon.ico"
-!define MUI_UNICON "..\assets\icon.ico"
+!define MUI_ICON "assets\icon.ico"
+!define MUI_UNICON "assets\icon.ico"
 !define MUI_WELCOMEPAGE_TITLE "Install ${APP_NAME}"
 
 !insertmacro MUI_PAGE_WELCOME
