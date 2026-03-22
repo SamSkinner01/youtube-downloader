@@ -1,7 +1,7 @@
 package main
 
 import (
-	"net/url"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -139,14 +139,26 @@ func main() {
 		if err != nil || release == nil {
 			return
 		}
-		downloadURL, _ := url.Parse(release.DMGUrl())
 		dialog.ShowConfirm(
 			"Update available",
-			"Version "+release.TagName+" is available (you have "+version.Current+").\nDownload now?",
+			"Version "+release.TagName+" is available (you have v"+version.Current+").\nDownload and install now?",
 			func(ok bool) {
-				if ok {
-					a.OpenURL(downloadURL)
+				if !ok {
+					return
 				}
+				bar := widget.NewProgressBar()
+				d := dialog.NewCustomWithoutButtons("Installing update...", bar, w)
+				d.Show()
+				go func() {
+					err := updater.ApplyUpdate(release, func(p float64) {
+						bar.SetValue(p)
+					})
+					if err != nil {
+						d.Hide()
+						dialog.ShowError(fmt.Errorf("update failed: %v", err), w)
+					}
+					// On success, ApplyUpdate calls os.Exit — this line is never reached.
+				}()
 			},
 			w,
 		)
