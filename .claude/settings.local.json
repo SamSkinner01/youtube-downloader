@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(./youtube2mp3 \"https://www.youtube.com/watch?v=clsvp1G3W8I\")",
+      "Bash(./youtube2mp3 -formats \"https://www.youtube.com/watch?v=clsvp1G3W8I\")",
+      "Bash(xcode-select -p)",
+      "Bash(clang --version)",
+      "Bash(go get:*)",
+      "Bash(go mod:*)",
+      "Bash(./youtube2mp3 --help)",
+      "Bash(./youtube2mp3 -f mp4 -q worst \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" 2>&1)",
+      "Bash(ffprobe -v quiet -show_streams \"Rick Astley - Never Gonna Give You Up \\(Official Video\\) \\(4K Remaster\\).mp4\")",
+      "Bash(ffprobe -v quiet -print_format json -show_format -show_streams \"Rick Astley - Never Gonna Give You Up \\(Official Video\\) \\(4K Remaster\\).mp4\")",
+      "Bash(./youtube2mp3 -f mp3 \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")",
+      "Bash(./youtube2mp3 -f wav \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")"
+    ]
+  }
+}

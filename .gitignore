@@ -1,0 +1,19 @@
+# Binaries
+youtube-downloader
+youtube-downloader-gui
+youtube2mp3
+youtube2mp3-gui
+
+# Build artifacts
+*.app
+*.dmg
+*.icns
+*.iconset
+
+# Downloads
+*.mp3
+*.mp4
+*.wav
+
+# macOS
+.DS_Store
