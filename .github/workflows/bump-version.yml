@@ -69,8 +69,8 @@ jobs:
       - name: Install ffmpeg
         run: brew install ffmpeg
 
-      - name: Install macOS GUI dependencies
-        run: brew install pkg-config
+      - name: Install dependencies
+        run: brew install pkg-config dylibbundler
 
       - name: Build DMG
         run: |

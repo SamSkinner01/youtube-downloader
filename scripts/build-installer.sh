@@ -66,6 +66,23 @@ cat > "${APP_BUNDLE}/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
+echo "==> Bundling ffmpeg..."
+FFMPEG_SRC=$(which ffmpeg)
+FFPROBE_SRC=$(which ffprobe)
+cp "$FFMPEG_SRC"  "${APP_BUNDLE}/Contents/MacOS/ffmpeg"
+cp "$FFPROBE_SRC" "${APP_BUNDLE}/Contents/MacOS/ffprobe"
+
+# Bundle dylib dependencies so ffmpeg works without Homebrew installed
+LIBS_DIR="${APP_BUNDLE}/Contents/libs"
+mkdir -p "$LIBS_DIR"
+dylibbundler \
+  --overwrite-dir \
+  --bundle-deps \
+  --fix-file  "${APP_BUNDLE}/Contents/MacOS/ffmpeg" \
+  --fix-file  "${APP_BUNDLE}/Contents/MacOS/ffprobe" \
+  --dest-dir  "$LIBS_DIR" \
+  --install-path "@executable_path/../libs/"
+
 echo "==> Signing .app bundle..."
 if [ -n "$APPLE_SIGN_IDENTITY" ]; then
   # Full Developer ID signing (requires Apple Developer account)
