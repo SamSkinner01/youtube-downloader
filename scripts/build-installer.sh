@@ -7,7 +7,7 @@ ICON_SRC="../assets/ytd.jpg"
 APP_BUNDLE="${APP_NAME}.app"
 
 echo "==> Building binary..."
-VERSION=$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "${VERSION:-dev}")
+VERSION=$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "${VERSION:-dev}" | sed 's/^v//')
 DMG_NAME="YouTube-Downloader-${VERSION}.dmg"
 go build \
   -ldflags "-X youtube-downloader/internal/version.Current=${VERSION}" \
