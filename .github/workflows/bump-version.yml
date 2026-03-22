@@ -52,6 +52,14 @@ jobs:
           git tag ${{ steps.version.outputs.tag }}
           git push origin ${{ steps.version.outputs.tag }}
 
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.version.outputs.tag }} \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes
+
   build-macos:
     needs: bump
     runs-on: macos-latest
@@ -86,7 +94,6 @@ jobs:
         with:
           tag_name: ${{ needs.bump.outputs.tag }}
           files: scripts/YouTube-Downloader-*.dmg
-          generate_release_notes: true
 
   build-windows:
     needs: bump
