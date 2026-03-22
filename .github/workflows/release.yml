@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install ffmpeg
+        run: brew install ffmpeg
+
+      - name: Install macOS GUI dependencies
+        run: brew install pkg-config
+
+      - name: Build DMG
+        run: |
+          cd scripts
+          chmod +x build-installer.sh
+          ./build-installer.sh
+        env:
+          VERSION: ${{ github.ref_name }}
+
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: scripts/YouTube-Downloader-*.dmg
+          generate_release_notes: true

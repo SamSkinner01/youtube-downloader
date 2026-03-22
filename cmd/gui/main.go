@@ -1,11 +1,14 @@
 package main
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"youtube-downloader/internal/downloader"
+	"youtube-downloader/internal/updater"
+	"youtube-downloader/internal/version"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -126,6 +129,26 @@ func main() {
 		progressBar,
 		status,
 	)))
+
+	// Check for updates in the background after the window is shown.
+	go func() {
+		release, err := updater.Check(version.Current)
+		if err != nil || release == nil {
+			return
+		}
+		downloadURL, _ := url.Parse(release.DMGUrl())
+		dialog.ShowConfirm(
+			"Update available",
+			"Version "+release.TagName+" is available (you have "+version.Current+").\nDownload now?",
+			func(ok bool) {
+				if ok {
+					a.OpenURL(downloadURL)
+				}
+			},
+			w,
+		)
+	}()
+
 	w.ShowAndRun()
 }
 

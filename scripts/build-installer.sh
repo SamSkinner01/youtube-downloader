@@ -9,7 +9,11 @@ APP_BUNDLE="${APP_NAME}.app"
 DMG_NAME="YouTube-Downloader-${VERSION}.dmg"
 
 echo "==> Building binary..."
-go build -o youtube-downloader-gui ../cmd/gui/
+VERSION=$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "$VERSION")
+go build \
+  -ldflags "-X youtube-downloader/internal/version.Current=${VERSION}" \
+  -o youtube-downloader-gui \
+  ../cmd/gui/
 
 echo "==> Creating icon..."
 ICONSET="AppIcon.iconset"
