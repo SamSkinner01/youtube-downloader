@@ -123,11 +123,14 @@ func main() {
 		widget.NewFormItem("Quality", qualitySelect),
 	)
 
+	versionLabel := widget.NewLabelWithStyle("v"+version.Current, fyne.TextAlignTrailing, fyne.TextStyle{Italic: true})
+
 	w.SetContent(container.NewPadded(container.NewVBox(
 		form,
 		downloadBtn,
 		progressBar,
 		status,
+		versionLabel,
 	)))
 
 	// Check for updates in the background after the window is shown.
