@@ -158,16 +158,10 @@ func mountDMG(dmgPath string) (string, error) {
 		return "", err
 	}
 
-	// Plain text output has lines like:
-	// /dev/disk4s2  Apple_HFS  /Volumes/YouTube Downloader
+	// Plain text output has tab-separated lines like:
+	// /dev/disk4s2	Apple_HFS	/Volumes/YouTube Downloader
+	// Use Index so spaces in the volume name are preserved.
 	for _, line := range strings.Split(string(out), "\n") {
-		fields := strings.Fields(line)
-		for _, f := range fields {
-			if strings.HasPrefix(f, "/Volumes/") {
-				return f, nil
-			}
-		}
-		// Mount points with spaces won't survive Fields — find the tab-separated path
 		if idx := strings.Index(line, "/Volumes/"); idx != -1 {
 			return strings.TrimSpace(line[idx:]), nil
 		}
